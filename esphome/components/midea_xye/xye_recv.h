@@ -49,8 +49,13 @@ struct __attribute__((packed)) QueryResponseData {
   Temperature t3_temperature;      ///< [14] Outdoor coil/ambient temperature (T3)
   uint8_t current;                 ///< [15] Current draw (units TBD, often reads 0xFF)
   uint8_t unknown2;                ///< [16] Unknown/reserved
-  uint8_t timer_start;             ///< [17] Start timer setting (combinable TimerFlags)
-  uint8_t timer_stop;              ///< [18] Stop timer setting (combinable TimerFlags)
+  uint8_t timer_start;             ///< [17] ON-timer setting. 0x00 = disabled.
+                                   ///<      Encoding: values 1–20 → 0.5 h steps (0.5 h…10 h);
+                                   ///<      values 21–34 → 1 h steps (11 h…24 h).
+                                   ///<      Formula: hours = (val <= 20) ? val * 0.5f : val - 10.
+  uint8_t timer_stop;              ///< [18] OFF-timer setting. Same encoding as timer_start.
+                                   ///<      0x02 (1 h) observed when sleep/ECO mode auto-sets
+                                   ///<      a 1-hour shutdown timer.
   CompressorRunningFlag compressor_running_flag; ///< [19] Provisional compressor-running flag;
                                                  ///<      observed as ACTIVE (0x01) when heating
                                                  ///<      with the compressor on, and IDLE (0x00)
