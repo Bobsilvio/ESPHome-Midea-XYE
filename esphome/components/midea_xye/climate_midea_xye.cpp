@@ -358,6 +358,13 @@ void ClimateMideaXYE::ParseResponse() {
       ForceReadNextCycle = 0;
       break;
     }
+    case Command::QUERY_EXTENDED_RESPONSE: {
+      // 0xC5: some AC variants respond to QUERY_EXTENDED with this code instead of 0xC4.
+      // The payload is not in the C4 extended layout (sensor bytes are 0xFF/garbage),
+      // so only reset ForceReadNextCycle and skip sensor/number updates.
+      ForceReadNextCycle = 0;
+      break;
+    }
     default:
       break;
   }

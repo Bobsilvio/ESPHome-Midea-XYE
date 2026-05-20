@@ -57,12 +57,13 @@ constexpr NodeId MAX_DEVICE_ID = 0x3F;    ///< Maximum valid device ID (0x00..0x
 /**
  * @brief Command types sent from client (thermostat) to server (HVAC unit)
  *
- * Note: Server responses use the same command codes, so there's no separate
- * ServerCommand enum in this protocol variant.
+ * Note: Most server responses echo the same command code. Exception: some AC
+ * variants respond to QUERY_EXTENDED (0xC4) with 0xC5 instead of 0xC4.
  */
 enum class Command : uint8_t {
   QUERY = 0xC0,                                    ///< Query current status (basic)
   QUERY_EXTENDED = 0xC4,                           ///< Query extended status - derived from QUERY (0xC0 | 0x04)
+  QUERY_EXTENDED_RESPONSE = 0xC5,                  ///< Some AC variants respond to QUERY_EXTENDED with 0xC5 instead of 0xC4
   SET = 0xC3,                                      ///< Set operation parameters - derived from QUERY (0xC0 | 0x03)
   FOLLOW_ME = 0xC6,                                ///< Follow-Me temperature update - derived from QUERY (0xC0 | 0x06)
   LOCK = 0xCC,                                     ///< Lock the physical controls - derived from QUERY (0xC0 | 0x0C)
