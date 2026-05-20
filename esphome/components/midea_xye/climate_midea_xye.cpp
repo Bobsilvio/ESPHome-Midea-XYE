@@ -161,7 +161,18 @@ void ClimateMideaXYE::sendRecv(uint8_t cmdSent) {
             controlState = ControlState::SEND_FOLLOWME;
             break;
           case CLIENT_COMMAND_QUERY_EXTENDED:
-            controlState = ControlState::SEND_QUERY;
+            // After each QUERY_EXTENDED cycle, send FOLLOW_ME if unit is ON and
+            // sensor is available. Ensures follow_me is sent even when the sensor
+            // value hasn't changed since boot (when mode was OFF and the initial
+            // callback was silently dropped).
+            if (this->mode != ClimateMode::CLIMATE_MODE_OFF &&
+                this->follow_me_sensor_ != nullptr &&
+                this->follow_me_sensor_->has_state() &&
+                !std::isnan(this->follow_me_sensor_->state)) {
+              this->do_follow_me(this->follow_me_sensor_->state, false);
+            } else {
+              controlState = ControlState::SEND_QUERY;
+            }
             break;
           case CLIENT_COMMAND_FOLLOWME:
             controlState = ControlState::SEND_QUERY;
