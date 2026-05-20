@@ -71,6 +71,10 @@ climate::ClimateAction XYEAdapter::get_climate_action(climate::ClimateMode mode,
     action = compressor_active ? ClimateAction::CLIMATE_ACTION_HEATING : ClimateAction::CLIMATE_ACTION_FAN;
   } else if (mode == ClimateMode::CLIMATE_MODE_COOL && fan_running) {
     action = compressor_active ? ClimateAction::CLIMATE_ACTION_COOLING : ClimateAction::CLIMATE_ACTION_FAN;
+  } else if (mode == ClimateMode::CLIMATE_MODE_DRY && fan_running) {
+    action = ClimateAction::CLIMATE_ACTION_DRYING;
+  } else if (mode == ClimateMode::CLIMATE_MODE_FAN_ONLY && fan_running) {
+    action = ClimateAction::CLIMATE_ACTION_FAN;
   }
 
   // In heat/cool (auto) mode refine the action using the unit's reported sub-mode.

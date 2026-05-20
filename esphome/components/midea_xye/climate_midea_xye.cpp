@@ -216,8 +216,8 @@ void ClimateMideaXYE::update() {
       }
       cmdSent = CLIENT_COMMAND_FOLLOWME;
       sendRecv(cmdSent);
-      if (this->mode == ClimateMode::CLIMATE_MODE_OFF) {
-        ESP_LOGI(Constants::TAG, "Set static pressure.");
+      if (tx_data.message.data.standard.target_temperature.value & STATIC_PRESSURE_FLAG) {
+        ESP_LOGI(Constants::TAG, "Sent static pressure setting.");
       } else {
         ESP_LOGI(Constants::TAG, "Sent Follow-Me data.");
       }
@@ -299,7 +299,8 @@ void ClimateMideaXYE::ParseResponse() {
         // C0 byte-19 compressor flag is still provisional. When disabled, compressor_active=true
         // and defrost_active=false reproduce the legacy "fan running implies heating/cooling".
         const bool compressor_active = !this->compressor_aware_action_ ||
-                                       qr.compressor_running_flag == CompressorRunningFlag::ACTIVE;
+                                       qr.compressor_running_flag == CompressorRunningFlag::ACTIVE ||
+                                       qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_ALT;
         const bool defrost_active = this->compressor_aware_action_ &&
                                     XYEAdapter::is_defrost_active(qr.protect_flags.value());
         update_property(this->action,
@@ -337,7 +338,8 @@ void ClimateMideaXYE::ParseResponse() {
 #ifdef USE_BINARY_SENSOR
       set_binary_sensor(this->defrost_sensor_, XYEAdapter::is_defrost_active(qr.protect_flags.value()));
       set_binary_sensor(this->compressor_active_sensor_,
-                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE);
+                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE ||
+                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_ALT);
 #endif
       break;
     }
