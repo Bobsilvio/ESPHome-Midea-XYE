@@ -15,7 +15,7 @@ size_t TransmitMessageData::print_debug(const char *tag, Command command, size_t
   
   left = print_debug_enum(tag, "operation_mode", operation_mode, left, level);
   left = print_debug_enum(tag, "fan_mode", fan_mode, left, level);
-  left = target_temperature.print_debug(tag, "target_temperature", left, level);
+  left = target_temperature.print_debug(tag, "target_temperature", left, level, TemperatureEncoding::RAW);
   left = print_debug_uint8(tag, "timer_start", timer_start, left, level);
   left = print_debug_uint8(tag, "timer_stop", timer_stop, left, level);
   left = print_debug_enum(tag, "mode_flags", mode_flags, left, level);
