@@ -170,6 +170,11 @@ void ClimateMideaXYE::sendRecv(uint8_t cmdSent) {
                 this->follow_me_sensor_->has_state() &&
                 !std::isnan(this->follow_me_sensor_->state)) {
               this->do_follow_me(this->follow_me_sensor_->state, false);
+              // do_follow_me() uses queuedCommand when controlState==WAIT_DATA,
+              // but we are already inside the timeout callback — promote directly
+              // to avoid the queuedCommand being stranded (deadlock).
+              controlState = ControlState::SEND_FOLLOWME;
+              queuedCommand = ControlState::WAIT_DATA;
             } else {
               controlState = ControlState::SEND_QUERY;
             }
