@@ -109,7 +109,21 @@ size_t ReceiveData::print_debug(size_t left, const char *tag, int level) const {
     case Command::UNLOCK:
       left = message.data.unlock_response.print_debug(tag, left, level);
       break;
-    
+
+    case Command::QUERY_EXTENDED_RESPONSE: {
+      // 0xC5 payload layout differs from C0; print raw bytes to avoid misleading field names.
+      const uint8_t *raw = message.raw + sizeof(ReceiveMessageFrame);
+      size_t data_len = (left < (RX_MESSAGE_LENGTH - sizeof(ReceiveMessageFrame) - sizeof(MessageFrameEnd)))
+                            ? left
+                            : (RX_MESSAGE_LENGTH - sizeof(ReceiveMessageFrame) - sizeof(MessageFrameEnd));
+      ::esphome::esp_log_printf_(level, tag, __LINE__, ESPHOME_LOG_FORMAT("  Data (0xC5, raw):"));
+      for (size_t i = 0; i < data_len; i++) {
+        ::esphome::esp_log_printf_(level, tag, __LINE__, ESPHOME_LOG_FORMAT("    [%02zu]: 0x%02X"), i, raw[i]);
+      }
+      left = (left > data_len) ? left - data_len : 0;
+      break;
+    }
+
     default:
       left = message.data.generic.print_debug(tag, left, level);
       break;
