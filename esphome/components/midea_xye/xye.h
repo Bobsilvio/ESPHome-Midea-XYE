@@ -102,12 +102,15 @@ enum class OperationMode : uint8_t {
  * Check bit 7 for AUTO status; mask with FAN_SPEED_MASK for the actual running speed.
  */
 enum class FanMode : uint8_t {
-  FAN_OFF = 0x00,     ///< Fan off
-  FAN_HIGH = 0x01,    ///< High speed
-  FAN_MEDIUM = 0x02,  ///< Medium speed
-  FAN_LOW_ALT = 0x03, ///< Low speed (alternate) - observed in some implementations
-  FAN_LOW = 0x04,     ///< Low speed
-  FAN_AUTO = 0x80     ///< Automatic fan speed (bit 7 set; lower nibble may encode current physical speed)
+  FAN_OFF = 0x00,          ///< Fan off
+  FAN_HIGH = 0x01,         ///< High speed
+  FAN_MEDIUM = 0x02,       ///< Medium speed
+  FAN_LOW_ALT = 0x03,      ///< Low speed (alternate) - observed in some implementations
+  FAN_LOW = 0x04,          ///< Low speed
+  FAN_AUTO = 0x80,         ///< Automatic fan speed (bit 7 set; lower nibble may encode current physical speed)
+  FAN_AUTO_HIGH = 0x81,    ///< AUTO mode, currently running at high speed (0x80 | 0x01)
+  FAN_AUTO_MEDIUM = 0x82,  ///< AUTO mode, currently running at medium speed (0x80 | 0x02)
+  FAN_AUTO_LOW = 0x84,     ///< AUTO mode, currently running at low speed (0x80 | 0x04)
 };
 
 /**

@@ -101,6 +101,9 @@ const std::map<FanMode, const char*> FAN_MODE_MAP = {
   {FanMode::FAN_LOW_ALT, "FAN_LOW_ALT"},
   {FanMode::FAN_LOW, "FAN_LOW"},
   {FanMode::FAN_AUTO, "FAN_AUTO"},
+  {FanMode::FAN_AUTO_HIGH, "FAN_AUTO_HIGH"},
+  {FanMode::FAN_AUTO_MEDIUM, "FAN_AUTO_MEDIUM"},
+  {FanMode::FAN_AUTO_LOW, "FAN_AUTO_LOW"},
 };
 
 const std::map<ModeFlags, const char*> MODE_FLAGS_MAP = {
@@ -147,6 +150,7 @@ const std::map<CompressorFlags, const char*> COMPRESSOR_FLAGS_MAP = {
 const std::map<CompressorRunningFlag, const char*> COMPRESSOR_RUNNING_FLAG_MAP = {
   {CompressorRunningFlag::IDLE, "IDLE"},
   {CompressorRunningFlag::ACTIVE, "ACTIVE"},
+  {CompressorRunningFlag::ACTIVE_ALT, "ACTIVE_ALT"},
 };
 
 const std::map<TargetFanSpeed, const char*> TARGET_FAN_SPEED_MAP = {
