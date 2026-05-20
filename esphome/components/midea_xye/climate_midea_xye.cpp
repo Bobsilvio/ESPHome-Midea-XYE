@@ -192,9 +192,12 @@ void ClimateMideaXYE::update() {
       break;
     }
     case ControlState::SEND_FOLLOWME: {
-      // If the AC mode changed, follow-me should be
-      // refreshed, if emulating the wired controller's
-      // behavior.
+      // Skip if tx_data is stale SET data (e.g. automatic transition after SEND_SET
+      // when mode=OFF and do_follow_me() never ran to prepare a real FOLLOW_ME packet).
+      if (tx_data.message.frame.header.command != Command::FOLLOW_ME) {
+        controlState = ControlState::SEND_QUERY;
+        break;
+      }
       cmdSent = CLIENT_COMMAND_FOLLOWME;
       sendRecv(cmdSent);
       if (this->mode == ClimateMode::CLIMATE_MODE_OFF) {
