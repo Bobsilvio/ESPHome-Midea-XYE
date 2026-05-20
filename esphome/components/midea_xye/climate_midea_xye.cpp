@@ -259,6 +259,13 @@ void ClimateMideaXYE::ParseResponse() {
         update_property(this->mode, mode, need_publish);
         if (mode != ClimateMode::CLIMATE_MODE_OFF) {
           this->last_on_mode_ = mode;
+#ifndef SET_TARGET_TEMP_ON_QUERY
+          // Only update target_temperature when unit is ON and outside post-SET grace.
+          // When OFF, the AC may echo the static-pressure FOLLOWME byte (0x1B=27) as
+          // target_temperature, which would corrupt the setpoint stored in HA.
+          update_property(this->target_temperature,
+                          XYEAdapter::get_target_temperature(qr.target_temperature.value), need_publish);
+#endif
         }
       }
 
@@ -271,13 +278,6 @@ void ClimateMideaXYE::ParseResponse() {
 
         // Update current_temperature based on sensor availability
         this->update_current_temperature_from_sensors_(need_publish);
-
-#ifndef SET_TARGET_TEMP_ON_QUERY
-        // Temperature is raw Celsius; bit 6 (SET_TEMP_STATUS_FLAG / 0x40) may be set
-        // by the unit in certain states and must be masked out before use.
-        update_property(this->target_temperature,
-                        XYEAdapter::get_target_temperature(qr.target_temperature.value), need_publish);
-#endif
 
         // Compressor/defrost-aware action is opt-in (compressor_aware_action) while the
         // C0 byte-19 compressor flag is still provisional. When disabled, compressor_active=true
