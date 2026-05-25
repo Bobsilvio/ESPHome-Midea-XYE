@@ -342,9 +342,10 @@ enum class SubsystemFlags : uint8_t {
  * "UNKNOWN" until the mapping is expanded.
  */
 enum class CompressorRunningFlag : uint8_t {
-  IDLE = 0x00,        ///< Compressor idle/not running
-  ACTIVE = 0x01,      ///< Compressor actively running
-  ACTIVE_ALT = 0x03,  ///< Compressor running (alternate encoding observed on some units in HEAT mode)
+  IDLE = 0x00,           ///< Compressor idle/not running
+  ACTIVE = 0x01,         ///< Compressor actively running
+  ACTIVE_STARTUP = 0x02, ///< Compressor starting up (transitional: observed for ~3-4 cycles before ACTIVE_ALT)
+  ACTIVE_ALT = 0x03,     ///< Compressor running (alternate encoding observed on some units in HEAT mode)
 };
 
 /// Defrost active flag within the 16-bit `protect_flags` field of the C0 QUERY response.

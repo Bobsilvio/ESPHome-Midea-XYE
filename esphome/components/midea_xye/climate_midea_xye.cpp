@@ -300,6 +300,7 @@ void ClimateMideaXYE::ParseResponse() {
         // and defrost_active=false reproduce the legacy "fan running implies heating/cooling".
         const bool compressor_active = !this->compressor_aware_action_ ||
                                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE ||
+                                       qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_STARTUP ||
                                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_ALT;
         const bool defrost_active = this->compressor_aware_action_ &&
                                     XYEAdapter::is_defrost_active(qr.protect_flags.value());
@@ -339,6 +340,7 @@ void ClimateMideaXYE::ParseResponse() {
       set_binary_sensor(this->defrost_sensor_, XYEAdapter::is_defrost_active(qr.protect_flags.value()));
       set_binary_sensor(this->compressor_active_sensor_,
                         qr.compressor_running_flag == CompressorRunningFlag::ACTIVE ||
+                        qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_STARTUP ||
                         qr.compressor_running_flag == CompressorRunningFlag::ACTIVE_ALT);
 #endif
       break;
@@ -368,6 +370,21 @@ void ClimateMideaXYE::ParseResponse() {
           this->publish_state();
       }
 #endif
+      // Sync fan mode from the C4 target_fan_speed field when enabled. This is the commanded
+      // speed as set on the physical thermostat and persists when the fan is idle, unlike
+      // C0 fan_mode which reads 0x00 when stopped.
+      // Respect post_set_grace_: if a SET was just issued the device may not yet have
+      // updated its reported target_fan_speed, so skip until C0 has cleared the grace window.
+      if (this->sync_fan_mode_from_device_ && post_set_grace_ == 0) {
+        bool fan_need_publish = false;
+        const ClimateFanMode new_fan_mode = XYEAdapter::get_climate_fan_mode(exr.target_fan_speed);
+        if (!this->fan_mode.has_value() || this->fan_mode.value() != new_fan_mode) {
+          this->fan_mode = new_fan_mode;
+          fan_need_publish = true;
+        }
+        if (fan_need_publish)
+          this->publish_state();
+      }
       // Note: Previous versions validated fixed protocol marker bytes (0xBC, 0xD6, 0x80, 0x80, 0x80, 0x80)
       // but investigation shows these bytes are actually dynamic engineering values:
       // - Bytes 19-20 (0xBCD6): 16-bit compressor frequency or outdoor fan RPM
