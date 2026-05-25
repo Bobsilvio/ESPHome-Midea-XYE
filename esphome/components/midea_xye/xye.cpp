@@ -150,6 +150,7 @@ const std::map<CompressorFlags, const char*> COMPRESSOR_FLAGS_MAP = {
 const std::map<CompressorRunningFlag, const char*> COMPRESSOR_RUNNING_FLAG_MAP = {
   {CompressorRunningFlag::IDLE, "IDLE"},
   {CompressorRunningFlag::ACTIVE, "ACTIVE"},
+  {CompressorRunningFlag::ACTIVE_STARTUP, "ACTIVE_STARTUP"},
   {CompressorRunningFlag::ACTIVE_ALT, "ACTIVE_ALT"},
 };
 
