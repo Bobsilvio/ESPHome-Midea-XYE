@@ -119,6 +119,9 @@ void ClimateMideaXYE::setTransmitParams() {
   d.mode_flags = XYEAdapter::get_mode_flags(
       this->preset.value_or(ClimatePreset::CLIMATE_PRESET_NONE), this->swing_mode);
 
+  d.timer_start = this->tx_timer_start_;
+  d.timer_stop = this->tx_timer_stop_;
+
   tx_data.update_crc();
 }
 
@@ -333,6 +336,12 @@ void ClimateMideaXYE::ParseResponse() {
       set_sensor(this->current_sensor_, static_cast<float>(qr.current));
       set_sensor(this->timer_start_sensor_, CalculateGetTime(qr.timer_start));
       set_sensor(this->timer_stop_sensor_, CalculateGetTime(qr.timer_stop));
+      if (post_set_grace_ == 0) {
+        this->tx_timer_start_ = qr.timer_start;
+        this->tx_timer_stop_ = qr.timer_stop;
+      }
+      set_number(this->timer_start_number_, CalculateGetTime(qr.timer_start) / 60.0f);
+      set_number(this->timer_stop_number_, CalculateGetTime(qr.timer_stop) / 60.0f);
       set_sensor(this->error_flags_sensor_, static_cast<float>(qr.error_flags.value()));
       set_sensor(this->protect_flags_sensor_, static_cast<float>(qr.protect_flags.value()));
       set_sensor(this->fan_speed_sensor_, static_cast<float>(XYEAdapter::get_fan_speed_level(qr.fan_mode)));
@@ -600,6 +609,24 @@ void ClimateMideaXYE::on_follow_me_sensor_update_(float state) {
 
   // Send follow_me command with the sensor temperature
   this->do_follow_me(state, false);
+}
+
+void ClimateMideaXYE::set_timer_start(float hours) {
+  this->tx_timer_start_ = CalculateSetTime(static_cast<uint32_t>(hours * 60.0f + 0.5f));
+  if (controlState != ControlState::WAIT_DATA) {
+    controlState = ControlState::SEND_SET;
+  } else {
+    queuedCommand = ControlState::SEND_SET;
+  }
+}
+
+void ClimateMideaXYE::set_timer_stop(float hours) {
+  this->tx_timer_stop_ = CalculateSetTime(static_cast<uint32_t>(hours * 60.0f + 0.5f));
+  if (controlState != ControlState::WAIT_DATA) {
+    controlState = ControlState::SEND_SET;
+  } else {
+    queuedCommand = ControlState::SEND_SET;
+  }
 }
 
 void ClimateMideaXYE::update_current_temperature_from_sensors_(bool &need_publish) {

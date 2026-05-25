@@ -69,9 +69,13 @@ CONF_COMPRESSOR_ACTIVE = "compressor_active"
 CONF_FAN_SPEED = "fan_speed"
 CONF_COMPRESSOR_AWARE_ACTION = "compressor_aware_action"
 CONF_SYNC_FAN_MODE_FROM_DEVICE = "sync_fan_mode_from_device"
+CONF_TIMER_START_NUMBER = "timer_start_number"
+CONF_TIMER_STOP_NUMBER = "timer_stop_number"
 midea_xye_ns = cg.esphome_ns.namespace("midea").namespace("xye")
 ClimateMideaXYE = midea_xye_ns.class_("ClimateMideaXYE", climate.Climate, cg.Component)
 StaticPressureNumber = midea_xye_ns.class_("StaticPressureNumber", number.Number, cg.Component)
+TimerStartNumber = midea_xye_ns.class_("TimerStartNumber", number.Number, cg.Component)
+TimerStopNumber = midea_xye_ns.class_("TimerStopNumber", number.Number, cg.Component)
 Capabilities = midea_xye_ns.namespace("Constants")
 
 def templatize(value):
@@ -169,6 +173,20 @@ CONFIG_SCHEMA = cv.All(
                 cv.Optional(CONF_MIN_VALUE, default=0): cv.float_,
                 cv.Optional(CONF_MAX_VALUE, default=15): cv.float_,
                 cv.Optional(CONF_ICON, default="mdi:gauge"): cv.icon,
+                cv.Optional(CONF_MODE, default="BOX"): cv.enum(number.NUMBER_MODES, upper=True),
+            }),
+            cv.Optional(CONF_TIMER_START_NUMBER): number.number_schema(TimerStartNumber).extend({
+                cv.GenerateID(): cv.declare_id(TimerStartNumber),
+                cv.Optional(CONF_MIN_VALUE, default=0.0): cv.float_,
+                cv.Optional(CONF_MAX_VALUE, default=24.0): cv.float_,
+                cv.Optional(CONF_ICON, default="mdi:timer-play"): cv.icon,
+                cv.Optional(CONF_MODE, default="BOX"): cv.enum(number.NUMBER_MODES, upper=True),
+            }),
+            cv.Optional(CONF_TIMER_STOP_NUMBER): number.number_schema(TimerStopNumber).extend({
+                cv.GenerateID(): cv.declare_id(TimerStopNumber),
+                cv.Optional(CONF_MIN_VALUE, default=0.0): cv.float_,
+                cv.Optional(CONF_MAX_VALUE, default=24.0): cv.float_,
+                cv.Optional(CONF_ICON, default="mdi:timer-stop"): cv.icon,
                 cv.Optional(CONF_MODE, default="BOX"): cv.enum(number.NUMBER_MODES, upper=True),
             }),
             cv.Optional(CONF_OUTDOOR_TEMPERATURE): sensor.sensor_schema(
@@ -417,6 +435,22 @@ async def to_code(config):
             step=1
         )
         cg.add(var.set_static_pressure_number(static_pressure_var))
+    if CONF_TIMER_START_NUMBER in config:
+        timer_var = await number.new_number(
+            config[CONF_TIMER_START_NUMBER],
+            min_value=config[CONF_TIMER_START_NUMBER][CONF_MIN_VALUE],
+            max_value=config[CONF_TIMER_START_NUMBER][CONF_MAX_VALUE],
+            step=0.25
+        )
+        cg.add(var.set_timer_start_number(timer_var))
+    if CONF_TIMER_STOP_NUMBER in config:
+        timer_var = await number.new_number(
+            config[CONF_TIMER_STOP_NUMBER],
+            min_value=config[CONF_TIMER_STOP_NUMBER][CONF_MIN_VALUE],
+            max_value=config[CONF_TIMER_STOP_NUMBER][CONF_MAX_VALUE],
+            step=0.25
+        )
+        cg.add(var.set_timer_stop_number(timer_var))
     if CONF_OUTDOOR_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_OUTDOOR_TEMPERATURE])
         cg.add(var.set_outdoor_temperature_sensor(sens))

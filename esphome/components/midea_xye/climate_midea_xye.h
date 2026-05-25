@@ -15,6 +15,7 @@
 #include "esphome/core/log.h"
 #include "ir_transmitter.h"
 #include "static_pressure_number.h"
+#include "timer_number.h"
 #include "xye.h"
 #include "xye_adapter.h"
 #include "xye_send.h"
@@ -110,7 +111,7 @@ class Constants {
   static const char *const TURBO;
 };
 
-class ClimateMideaXYE : public PollingComponent, public climate::Climate, public StaticPressureInterface {
+class ClimateMideaXYE : public PollingComponent, public climate::Climate, public StaticPressureInterface, public TimerInterface {
  public:
   ClimateMideaXYE() : PollingComponent(1000), tx_data(Command::QUERY) { this->response_timeout = 100; }
 
@@ -159,6 +160,16 @@ class ClimateMideaXYE : public PollingComponent, public climate::Climate, public
     number->set_parent(this);
   }
   void set_static_pressure(uint8_t value) override;
+  void set_timer_start_number(TimerStartNumber *number) {
+    this->timer_start_number_ = number;
+    number->set_parent(this);
+  }
+  void set_timer_stop_number(TimerStopNumber *number) {
+    this->timer_stop_number_ = number;
+    number->set_parent(this);
+  }
+  void set_timer_start(float hours) override;
+  void set_timer_stop(float hours) override;
   void update() override;
   void setup() override;
   void loop() override {}
@@ -241,6 +252,10 @@ class ClimateMideaXYE : public PollingComponent, public climate::Climate, public
   Sensor *follow_me_sensor_{nullptr};
   Sensor *internal_current_temperature_sensor_{nullptr};
   StaticPressureNumber *static_pressure_number_{nullptr};
+  TimerStartNumber *timer_start_number_{nullptr};
+  TimerStopNumber *timer_stop_number_{nullptr};
+  uint8_t tx_timer_start_{0};
+  uint8_t tx_timer_stop_{0};
   ClimateMode last_on_mode_;
   float internal_temperature_{NAN};
 
